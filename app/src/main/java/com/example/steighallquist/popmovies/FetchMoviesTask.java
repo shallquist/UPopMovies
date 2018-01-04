@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,14 +17,19 @@ import java.net.URL;
  * Created by steighallquist on 1/3/18.
  */
 
-public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
+public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
     final String MOVIE_DB_URL = "https://api.themoviedb.org/3/movie";
-    final String MOVIE_POPULAR = "popular";
 
     final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
+    public MovieAdapter mMovieAdapter;
+
+    public FetchMoviesTask(MovieAdapter movieAdapter) {
+        mMovieAdapter = movieAdapter;
+    }
+
     @Override
-    protected Void doInBackground(Void... voids) {
+    protected Movie[] doInBackground(String... strings) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -32,7 +39,7 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
         String moviesJsonStr = null;
 
         try {
-            URL url = getMovieUrl(MOVIE_POPULAR);
+            URL url = getMovieUrl(strings[0]);
 
             // Create the request to Movie DB, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -80,8 +87,19 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
             }
         }
 
+        Gson gson = new Gson();
+
+        Movies movies = gson.fromJson(moviesJsonStr, Movies.class);
 
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Movie[] movies) {
+        super.onPostExecute(movies);
+
+        mMovieAdapter.clear();
+        mMovieAdapter.add(movies);
     }
 
     private URL getMovieUrl(String api) throws IOException {
@@ -94,4 +112,5 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
 
         return url;
     }
+
 }
