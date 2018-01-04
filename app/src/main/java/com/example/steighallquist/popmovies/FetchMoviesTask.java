@@ -3,6 +3,7 @@ package com.example.steighallquist.popmovies;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 
 import com.google.gson.Gson;
 
@@ -12,12 +13,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by steighallquist on 1/3/18.
  */
 
-public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
+public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<Movie>> {
     final String MOVIE_DB_URL = "https://api.themoviedb.org/3/movie";
 
     final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
@@ -29,7 +32,7 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
     }
 
     @Override
-    protected Movie[] doInBackground(String... strings) {
+    protected ArrayList<Movie> doInBackground(String... strings) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -91,15 +94,15 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
 
         Movies movies = gson.fromJson(moviesJsonStr, Movies.class);
 
-        return null;
+        return (ArrayList<Movie>) movies.results;
     }
 
     @Override
-    protected void onPostExecute(Movie[] movies) {
+    protected void onPostExecute(ArrayList<Movie> movies) {
         super.onPostExecute(movies);
 
         mMovieAdapter.clear();
-        mMovieAdapter.add(movies);
+        mMovieAdapter.addAll(movies);
     }
 
     private URL getMovieUrl(String api) throws IOException {

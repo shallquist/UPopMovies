@@ -1,13 +1,16 @@
 package com.example.steighallquist.popmovies;
 
-import android.graphics.*;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
@@ -21,6 +24,13 @@ public class MainActivityFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+
+        fetchMovies();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
@@ -29,15 +39,33 @@ public class MainActivityFragment extends Fragment {
 
         mMovieAdapter = new MovieAdapter(
                 getActivity(),
-                R.layout.list_text_item,
-                R.id.text_view,
-                new ArrayList<android.graphics.Movie>()
+                R.layout.list_image_item,
+                R.id.poster_image_view,
+                new ArrayList<Movie>()
         );
 
+        gridView.setAdapter(mMovieAdapter);
 
-        FetchMoviesTask moviesTask = new FetchMoviesTask(mMovieAdapter);
-        moviesTask.execute("popular");
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Movie movie = (Movie)mMovieAdapter.getItem(position);
+
+                Gson gson = new Gson();
+                String jsonString = gson.toJson(movie);
+
+                Intent intent = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, jsonString);
+
+                startActivity(intent);
+            }
+        });
 
         return rootView;
+    }
+
+    private void fetchMovies() {
+        FetchMoviesTask moviesTask = new FetchMoviesTask(mMovieAdapter);
+        moviesTask.execute("popular");
     }
 }
